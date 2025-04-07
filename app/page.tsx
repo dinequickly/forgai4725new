@@ -33,10 +33,10 @@ export default function HomePage() {
           <div className="font-mono text-xs space-y-2">
             <div className="text-purple-300">{"// AI-generated code preview"}</div>
             <div>&lt;section class=&quot;<span className="text-yellow-300">container</span>&quot;&gt;</div>
-            <div className="ml-4">&lt;h1 class=&quot;<span className="text-green-300">text-4xl</span>&quot;&gt;{{ startupName }}&lt;/h1&gt;</div>
+            <div className="ml-4">&lt;h1 class=&quot;<span className="text-green-300">text-4xl</span>&quot;&gt;{'{{'} startupName {'}}'}&lt;/h1&gt;</div>
             <div className="ml-8 text-purple-300">🚀 Auto-generated component</div>
             <div className="ml-4">&lt;p class=&quot;<span className="text-green-300">text-gray-400</span>&quot;&gt;</div>
-            <div className="ml-8">{{ valueProposition }}</div>
+            <div className="ml-8">{'{{'} valueProposition {'}}'}</div>
             <div className="ml-4">&lt;/p&gt;</div>
             <div>&lt;/section&gt;</div>
           </div>
