@@ -2,6 +2,7 @@
 
 import './globals.css'; // Import global styles if you have them
 import { ReactNode } from 'react';
+import Link from 'next/link';
 
 export const metadata = {
   title: 'ForgeAI - App',
@@ -15,16 +16,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Example navigation - adapt to your existing components */}
         <nav className="p-4 shadow-md">
           <div className="max-w-screen-xl mx-auto flex items-center justify-between">
-            <a href="/" className="text-xl font-semibold">
+            <Link href="/" className="text-xl font-semibold">
               ForgeAI
-            </a>
+            </Link>
             <div>
-              <a href="/about" className="mr-4">
+              <Link href="/about" className="mr-4">
                 About
-              </a>
-              <a href="/contact">
+              </Link>
+              <Link href="/contact">
                 Contact
-              </a>
+              </Link>
             </div>
           </div>
         </nav>
