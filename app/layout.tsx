@@ -1,36 +1,45 @@
 // app/layout.tsx
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { Navbar } from "../components/Navbar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import './globals.css'; // Import global styles if you have them
+import { ReactNode } from 'react';
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "Your Product Name - Interactive Demo",
-  description: "See our platform in action with this interactive demo and walkthrough",
+export const metadata = {
+  title: 'ForgeAI - App',
+  description: 'A forward-thinking approach to AI solutions.',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Navbar />
-        {children}
+      <body>
+        {/* Example navigation - adapt to your existing components */}
+        <nav className="p-4 shadow-md">
+          <div className="max-w-screen-xl mx-auto flex items-center justify-between">
+            <a href="/" className="text-xl font-semibold">
+              ForgeAI
+            </a>
+            <div>
+              <a href="/about" className="mr-4">
+                About
+              </a>
+              <a href="/contact">
+                Contact
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        {/* Main content (children) */}
+        <main className="max-w-screen-xl mx-auto p-4">
+          {children}
+        </main>
+
+        {/* Example footer - adapt as needed */}
+        <footer className="mt-8 p-4 border-t">
+          <p className="text-center">
+            © {new Date().getFullYear()} ForgeAI. All rights reserved.
+          </p>
+        </footer>
       </body>
     </html>
   );
