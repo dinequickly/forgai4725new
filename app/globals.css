@@ -3,6 +3,25 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Hologram and neon grid effects */
+@keyframes hologram {
+  0% { opacity: 0.8; transform: rotateX(60deg) translateZ(0); }
+  100% { opacity: 1; transform: rotateX(60deg) translateZ(20px); }
+}
+
+.hologram-panel {
+  transform: rotateX(60deg);
+  animation: hologram 2s ease-in-out infinite alternate;
+  transform-style: preserve-3d;
+}
+
+.neon-grid {
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -117,6 +136,8 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-gray-100;
+    background: linear-gradient(to bottom right, #111827, #1e3a8a, #581c87);
+    min-height: 100vh;
   }
 }
