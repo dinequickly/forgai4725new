@@ -43,15 +43,26 @@ export default function ChatInterface() {
         body: JSON.stringify({ message: input }),
       });
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
       const data = await response.json();
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.message }]);
+
+      if (!response.ok) {
+        // Handle error response from our API
+        const errorMessage = data.details || data.error || 'Network response was not ok';
+        console.error('API Error:', errorMessage);
+        setMessages((prev) => [...prev, {
+          role: "assistant",
+          content: `Sorry, I encountered an error: ${errorMessage}. Please check that your Google API key is correctly configured in Vercel.`
+        }]);
+      } else {
+        // Handle successful response
+        setMessages((prev) => [...prev, { role: 'assistant', content: data.message }]);
+      }
     } catch (error) {
       console.error('Error:', error);
-      setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I encountered an error processing your request." }]);
+      setMessages((prev) => [...prev, {
+        role: "assistant",
+        content: "Sorry, I encountered an error processing your request. Please try again later."
+      }]);
     } finally {
       setIsLoading(false);
     }
