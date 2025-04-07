@@ -1,10 +1,5 @@
 // app/page.tsx
-import dynamic from 'next/dynamic';
-
-// Use dynamic import with no SSR to avoid hydration issues with the chat interface
-const ChatInterface = dynamic(() => import('@/components/ChatInterface'), {
-  ssr: false,
-});
+import ChatInterfaceWrapper from '@/components/ChatInterfaceWrapper';
 
 export default function HomePage() {
   return (
@@ -52,7 +47,7 @@ export default function HomePage() {
       {/* Chat Interface */}
       <div className="col-span-12 md:col-span-3">
         <div className="h-full min-h-[400px]">
-          <ChatInterface />
+          <ChatInterfaceWrapper />
         </div>
       </div>
     </div>
