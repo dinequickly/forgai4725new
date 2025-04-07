@@ -1,4 +1,10 @@
 // app/page.tsx
+import dynamic from 'next/dynamic';
+
+// Use dynamic import with no SSR to avoid hydration issues with the chat interface
+const ChatInterface = dynamic(() => import('@/components/ChatInterface'), {
+  ssr: false,
+});
 
 export default function HomePage() {
   return (
@@ -43,21 +49,10 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Live Preview Sphere */}
+      {/* Chat Interface */}
       <div className="col-span-12 md:col-span-3">
-        <div className="h-full min-h-[300px] bg-black/30 rounded-2xl backdrop-blur-lg p-6 border border-purple-400/20">
-          <div className="h-full flex flex-col">
-            <div className="flex-1 rounded-xl bg-gradient-to-br from-purple-900/50 to-blue-900/50 flex items-center justify-center">
-              <div className="w-32 h-32 border-2 border-purple-400 rounded-full flex items-center justify-center text-center text-sm p-4">
-                Live Mobile Preview
-              </div>
-            </div>
-            <div className="mt-6 grid grid-cols-3 gap-4">
-              <button className="p-2 bg-purple-600 rounded hover:bg-purple-500">📱</button>
-              <button className="p-2 bg-purple-600 rounded hover:bg-purple-500">💻</button>
-              <button className="p-2 bg-purple-600 rounded hover:bg-purple-500">🌐</button>
-            </div>
-          </div>
+        <div className="h-full min-h-[400px]">
+          <ChatInterface />
         </div>
       </div>
     </div>
