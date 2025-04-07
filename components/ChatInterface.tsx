@@ -15,6 +15,14 @@ export default function ChatInterface() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Set a fixed height for the chat container and enable scrolling
+  const chatContainerStyle = {
+    height: "350px",
+    overflowY: "auto" as const,
+    display: "flex",
+    flexDirection: "column" as const,
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() === "") return;
@@ -26,19 +34,7 @@ export default function ChatInterface() {
     setIsLoading(true);
 
     try {
-      // This would be replaced with your actual Google API call
-      // For now, we'll simulate a response
-      setTimeout(() => {
-        const assistantMessage = { 
-          role: "assistant", 
-          content: `I'm processing your request: "${input}". This is a placeholder response that would normally come from the Google API.`
-        };
-        setMessages((prev) => [...prev, assistantMessage]);
-        setIsLoading(false);
-      }, 1000);
-
-      // Actual API call would look something like this:
-      /*
+      // Make the actual API call to our backend
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -53,7 +49,6 @@ export default function ChatInterface() {
 
       const data = await response.json();
       setMessages((prev) => [...prev, { role: 'assistant', content: data.message }]);
-      */
     } catch (error) {
       console.error('Error:', error);
       setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I encountered an error processing your request." }]);
@@ -74,7 +69,7 @@ export default function ChatInterface() {
       </div>
 
       {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 neon-grid">
+      <div className="flex-1 p-4 space-y-4 neon-grid" style={chatContainerStyle}>
         {messages.map((message, index) => (
           <div
             key={index}
