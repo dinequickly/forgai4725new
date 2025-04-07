@@ -71,16 +71,19 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ message: aiResponse });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in chat API:', error);
 
     // Return a more detailed error message to help with debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error && process.env.NODE_ENV === 'development' ? error.stack : undefined;
+
     return NextResponse.json(
       {
         error: 'Failed to process chat request',
-        details: error.message || 'Unknown error',
+        details: errorMessage,
         // For development only - remove in production
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        stack: errorStack
       },
       { status: 500 }
     );
