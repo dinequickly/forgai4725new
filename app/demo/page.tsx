@@ -1,5 +1,4 @@
 // app/demo/page.tsx
-import Image from "next/image";
 import Link from "next/link";
 
 export default function DemoPage() {
@@ -19,7 +18,7 @@ export default function DemoPage() {
         <div className="bg-black/30 rounded-xl backdrop-blur-lg border border-purple-400/20 overflow-hidden group">
           <div className="h-40 bg-gradient-to-br from-purple-900/50 to-blue-900/50 flex items-center justify-center p-4">
             <div className="font-mono text-xs text-center">
-              <div className="text-purple-300">// Landing Page Generator</div>
+              <div className="text-purple-300">{"// Landing Page Generator"}</div>
               <div className="text-xs mt-2">Converts product descriptions into full landing pages</div>
             </div>
           </div>
@@ -39,7 +38,7 @@ export default function DemoPage() {
         <div className="bg-black/30 rounded-xl backdrop-blur-lg border border-purple-400/20 overflow-hidden group">
           <div className="h-40 bg-gradient-to-br from-blue-900/50 to-cyan-900/50 flex items-center justify-center p-4">
             <div className="font-mono text-xs text-center">
-              <div className="text-blue-300">// Financial Projector</div>
+              <div className="text-blue-300">{"// Financial Projector"}</div>
               <div className="text-xs mt-2">Generate 5-year financial forecasts from business plans</div>
             </div>
           </div>
@@ -59,7 +58,7 @@ export default function DemoPage() {
         <div className="bg-black/30 rounded-xl backdrop-blur-lg border border-purple-400/20 overflow-hidden group">
           <div className="h-40 bg-gradient-to-br from-indigo-900/50 to-purple-900/50 flex items-center justify-center p-4">
             <div className="font-mono text-xs text-center">
-              <div className="text-indigo-300">// API Architect</div>
+              <div className="text-indigo-300">{"// API Architect"}</div>
               <div className="text-xs mt-2">Design scalable API structures from product requirements</div>
             </div>
           </div>
