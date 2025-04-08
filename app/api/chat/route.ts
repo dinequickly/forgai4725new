@@ -29,44 +29,46 @@ You provide clear, concise, and helpful responses to questions about website dev
 When asked to generate a website or landing page, you'll collect the necessary information and help the user visualize what their site could look like.`;
 
 // Tool definition for site variable generation
-const generateSiteVariablesTool = {
-  functionDeclarations: [
-    {
-      name: "generate_site_variables",
-      description: "Generate variables for a new website or landing page based on user input",
-      parameters: {
-        type: "object",
-        properties: {
-          business_name: {
-            type: "string",
-            description: "The name of the business or startup"
+const generateSiteVariablesTool = [
+  {
+    functionDeclarations: [
+      {
+        name: "generate_site_variables",
+        description: "Generate variables for a new website or landing page based on user input",
+        parameters: {
+          type: "object",
+          properties: {
+            business_name: {
+              type: "string",
+              description: "The name of the business or startup"
+            },
+            business_description: {
+              type: "string",
+              description: "A brief description of what the business does"
+            },
+            primary_color: {
+              type: "string",
+              description: "Primary brand color in hex format (e.g., #FF5500)"
+            },
+            secondary_color: {
+              type: "string",
+              description: "Secondary brand color in hex format (e.g., #0055FF)"
+            },
+            headline: {
+              type: "string",
+              description: "Main headline for the landing page"
+            },
+            subheadline: {
+              type: "string",
+              description: "Supporting subheadline that explains the value proposition"
+            }
           },
-          business_description: {
-            type: "string",
-            description: "A brief description of what the business does"
-          },
-          primary_color: {
-            type: "string",
-            description: "Primary brand color in hex format (e.g., #FF5500)"
-          },
-          secondary_color: {
-            type: "string",
-            description: "Secondary brand color in hex format (e.g., #0055FF)"
-          },
-          headline: {
-            type: "string",
-            description: "Main headline for the landing page"
-          },
-          subheadline: {
-            type: "string",
-            description: "Supporting subheadline that explains the value proposition"
-          }
-        },
-        required: ["business_name", "business_description", "headline"]
+          required: ["business_name", "business_description", "headline"]
+        }
       }
-    }
-  ]
-};
+    ]
+  }
+];
 
 // Initialize Google AI client if API key is available
 let genAI: GoogleGenerativeAI | undefined;
