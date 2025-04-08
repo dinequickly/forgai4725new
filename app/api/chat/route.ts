@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse, NextRequest } from 'next/server';
-import { createEnvDebugInfo, isEnvVarSet, getEnvVarPreview } from '@/utils/env-helper';
+import { createEnvDebugInfo, getEnvVarPreview } from '@/utils/env-helper';
 
 // --- Configuration & Setup ---
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
