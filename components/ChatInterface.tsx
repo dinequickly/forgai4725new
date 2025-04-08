@@ -82,6 +82,23 @@ export default function ChatInterface() {
           role: "assistant",
           content: `Sorry, I encountered an error: ${errorMessage}. Please check that your Google API key is correctly configured in Vercel.`
         }]);
+      } else if (data.fallback) {
+        // Handle fallback response (when API key is missing or invalid)
+        console.log('Fallback mode activated, debug info:', data.debug);
+        let content = data.message;
+
+        // Add debugging information if available
+        if (data.debug) {
+          content += '\n\n---\n**Debug Info:**\n';
+          if (data.debug.apiKeyExists) {
+            content += `- API key exists (${data.debug.apiKeyLength} characters) but initialization failed\n`;
+          } else {
+            content += '- API key is missing or empty\n';
+          }
+          content += `- Environment variables: ${data.debug.envVars}\n`;
+        }
+
+        setMessages((prev) => [...prev, { role: 'assistant', content }]);
       } else if (data.type === 'processing') {
         // Handle processing response (for function calls)
         setMessages((prev) => [...prev, { role: 'assistant', content: data.message }]);

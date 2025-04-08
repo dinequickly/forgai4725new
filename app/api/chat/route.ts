@@ -1,13 +1,24 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse, NextRequest } from 'next/server';
+import { createEnvDebugInfo, isEnvVarSet, getEnvVarPreview } from '@/utils/env-helper';
 
 // --- Configuration & Setup ---
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 const MAKE_WEBHOOK_URL = process.env.MAKE_WEBHOOK_URL; // Optional for Make.com integration
 
+// Create and log debug information about environment variables
+const envDebugInfo = createEnvDebugInfo();
+console.log('Environment debug info:', envDebugInfo);
+
 if (!GOOGLE_API_KEY) {
     console.error("FATAL ERROR: GOOGLE_API_KEY environment variable is not set.");
+} else {
+    // Log first few characters of API key for debugging
+    console.log(`GOOGLE_API_KEY is set and starts with: ${getEnvVarPreview('GOOGLE_API_KEY')}`);
+    console.log(`GOOGLE_API_KEY length: ${GOOGLE_API_KEY.length}`);
+    console.log(`Running in environment: ${process.env.VERCEL_ENV || 'local'}`);
 }
+
 if (!MAKE_WEBHOOK_URL) {
     console.warn("WARNING: MAKE_WEBHOOK_URL environment variable is not set. Make.com integration will be disabled.");
 }
@@ -69,9 +80,23 @@ export async function POST(request: NextRequest) {
     // Check if essential components are initialized
     if (!genAI) {
       console.error("API cannot function: Google AI Client not initialized (check API key).");
+
+      // Provide more detailed error information
+      const envVarInfo = GOOGLE_API_KEY ?
+        `API key exists (${GOOGLE_API_KEY.length} chars) but client initialization failed` :
+        'API key is missing or empty';
+
+      // Get detailed environment debug info
+      const debugInfo = createEnvDebugInfo();
+
       return NextResponse.json({
-        message: "I'm currently operating in fallback mode because the Google API key is not configured. Please add your Google API key to the Vercel environment variables.",
-        fallback: true
+        message: `I'm currently operating in fallback mode because the Google API key is not properly configured. Please check your Vercel environment variables. Debug info: ${envVarInfo}`,
+        fallback: true,
+        debug: {
+          ...debugInfo,
+          vercelEnv: process.env.VERCEL_ENV || 'unknown',
+          nodeEnv: process.env.NODE_ENV || 'unknown'
+        }
       });
     }
 
