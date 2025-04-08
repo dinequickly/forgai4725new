@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, Tool } from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse, NextRequest } from 'next/server';
 import { createEnvDebugInfo, getEnvVarPreview } from '@/utils/env-helper';
 
@@ -27,48 +27,6 @@ if (!MAKE_WEBHOOK_URL) {
 const OPTIMIZED_SYSTEM_PROMPT = `You are ForgeAI, an AI assistant specialized in helping startups create and optimize their digital presence.
 You provide clear, concise, and helpful responses to questions about website development, marketing, and business strategy.
 When asked to generate a website or landing page, you'll collect the necessary information and help the user visualize what their site could look like.`;
-
-// Tool definition for site variable generation
-const generateSiteVariablesTool: Tool[] = [
-  {
-    functionDeclarations: [
-      {
-        name: "generate_site_variables",
-        description: "Generate variables for a new website or landing page based on user input",
-        parameters: {
-          type: "OBJECT" as const,
-          properties: {
-            business_name: {
-              type: "STRING" as const,
-              description: "The name of the business or startup"
-            },
-            business_description: {
-              type: "STRING" as const,
-              description: "A brief description of what the business does"
-            },
-            primary_color: {
-              type: "STRING" as const,
-              description: "Primary brand color in hex format (e.g., #FF5500)"
-            },
-            secondary_color: {
-              type: "STRING" as const,
-              description: "Secondary brand color in hex format (e.g., #0055FF)"
-            },
-            headline: {
-              type: "STRING" as const,
-              description: "Main headline for the landing page"
-            },
-            subheadline: {
-              type: "STRING" as const,
-              description: "Supporting subheadline that explains the value proposition"
-            }
-          },
-          required: ["business_name", "business_description", "headline"]
-        }
-      }
-    ]
-  }
-];
 
 // Initialize Google AI client if API key is available
 let genAI: GoogleGenerativeAI | undefined;
@@ -114,7 +72,6 @@ export async function POST(request: NextRequest) {
     const model = genAI.getGenerativeModel({
       model: "gemini-pro", // Using a more stable model version
       systemInstruction: OPTIMIZED_SYSTEM_PROMPT,
-      tools: generateSiteVariablesTool,
     });
 
     // --- Start Chat / Send Message ---
@@ -130,64 +87,19 @@ export async function POST(request: NextRequest) {
     const response = result.response;
 
     // --- Process Response ---
-    let extractedArgs = null;
-    let aiTextMessage = null;
+    const aiTextMessage = response.text();
+    console.log("AI Text Response:", aiTextMessage);
+
     const updatedHistory = [...history]; // Start building updated history
-
     updatedHistory.push({ role: "user", parts: [{ text: userMessage }] }); // Add user turn
+    updatedHistory.push({ role: "model", parts: [{ text: aiTextMessage }] }); // Add AI turn
 
-    const functionCalls = response.functionCalls();
-
-    if (functionCalls && functionCalls.length > 0 && functionCalls[0].name === 'generate_site_variables') {
-      // --- Handle Function Call ---
-      console.log("Function call requested by model:");
-      extractedArgs = functionCalls[0].args;
-      console.log("Arguments:", JSON.stringify(extractedArgs, null, 2));
-
-      // Trigger Make.com webhook if URL is configured
-      if (MAKE_WEBHOOK_URL) {
-        const payloadForMake = {
-          ...extractedArgs,
-          user_id: "app-router-user-mvp", // Example user ID
-        };
-
-        console.log("Sending payload to Make.com webhook...");
-        const makeResponse = await fetch(MAKE_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payloadForMake),
-        });
-
-        if (!makeResponse.ok) {
-          const errorBody = await makeResponse.text();
-          console.error(`Error triggering Make.com: ${makeResponse.status} ${makeResponse.statusText}`, errorBody);
-          return NextResponse.json({ message: 'ForgeAI started but failed to trigger the build process.' }, { status: 502 });
-        }
-        console.log("Make.com webhook triggered successfully.");
-      } else {
-        console.log("Make.com webhook URL not configured. Skipping webhook trigger.");
-      }
-
-      // Send processing confirmation - NO history update sent back on function call
-      return NextResponse.json({
-        message: "Okay, I have the details! ForgeAI is starting the build process now...",
-        type: 'processing' // Special type for frontend
-      }, { status: 200 });
-
-    } else {
-      // --- Handle Regular Text Response ---
-      aiTextMessage = response.text();
-      console.log("AI Text Response:", aiTextMessage);
-
-      updatedHistory.push({ role: "model", parts: [{ text: aiTextMessage }] }); // Add AI turn
-
-      // Send text response back WITH updated history
-      return NextResponse.json({
-        message: aiTextMessage,
-        history: updatedHistory,
-        type: 'text'
-      }, { status: 200 });
-    }
+    // Send text response back WITH updated history
+    return NextResponse.json({
+      message: aiTextMessage,
+      history: updatedHistory,
+      type: 'text'
+    }, { status: 200 });
   } catch (error: unknown) {
     console.error('Error in chat API:', error);
 
