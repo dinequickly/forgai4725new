@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "cleanUrls": true,
+  "github": {
+    "enabled": true,
+    "silent": false
+  },
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./ ':!app/api/chat/route.ts'",
+  "env": {
+    "NEXT_TELEMETRY_DISABLED": "1"
+  }
+}

@@ -1,0 +1,9 @@
+# Ignore the problematic file
+app/api/chat/route.ts
+
+# Ignore other unnecessary files
+.git
+.github
+.vscode
+node_modules
+README.md
