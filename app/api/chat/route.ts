@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, Tool } from "@google/generative-ai";
 import { NextResponse, NextRequest } from 'next/server';
 import { createEnvDebugInfo, getEnvVarPreview } from '@/utils/env-helper';
 
@@ -29,37 +29,37 @@ You provide clear, concise, and helpful responses to questions about website dev
 When asked to generate a website or landing page, you'll collect the necessary information and help the user visualize what their site could look like.`;
 
 // Tool definition for site variable generation
-const generateSiteVariablesTool = [
+const generateSiteVariablesTool: Tool[] = [
   {
     functionDeclarations: [
       {
         name: "generate_site_variables",
         description: "Generate variables for a new website or landing page based on user input",
         parameters: {
-          type: "object",
+          type: "OBJECT" as const,
           properties: {
             business_name: {
-              type: "string",
+              type: "STRING" as const,
               description: "The name of the business or startup"
             },
             business_description: {
-              type: "string",
+              type: "STRING" as const,
               description: "A brief description of what the business does"
             },
             primary_color: {
-              type: "string",
+              type: "STRING" as const,
               description: "Primary brand color in hex format (e.g., #FF5500)"
             },
             secondary_color: {
-              type: "string",
+              type: "STRING" as const,
               description: "Secondary brand color in hex format (e.g., #0055FF)"
             },
             headline: {
-              type: "string",
+              type: "STRING" as const,
               description: "Main headline for the landing page"
             },
             subheadline: {
-              type: "string",
+              type: "STRING" as const,
               description: "Supporting subheadline that explains the value proposition"
             }
           },
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
 
     // --- Select Model and Configure ---
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash-latest",
+      model: "gemini-pro", // Using a more stable model version
       systemInstruction: OPTIMIZED_SYSTEM_PROMPT,
       tools: generateSiteVariablesTool,
     });
