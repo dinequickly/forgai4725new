@@ -2,8 +2,21 @@
 
 import { useState, useRef, useEffect } from "react";
 
+// Define types for messages and history
+type MessageRole = "user" | "assistant" | "system";
+
+interface Message {
+  role: MessageRole;
+  content: string;
+}
+
+interface HistoryItem {
+  role: string; // "user" or "model"
+  parts: Array<{ text: string }>;
+}
+
 export default function ChatInterface() {
-  const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([
+  const [messages, setMessages] = useState<Array<Message>>([
     { role: "assistant", content: "Welcome to ForgeAI. How can I assist with your startup today?" }
   ]);
   const [input, setInput] = useState("");
@@ -23,6 +36,16 @@ export default function ChatInterface() {
     flexDirection: "column" as const,
   };
 
+  // Convert messages to the format expected by the Google AI API
+  const getBackendHistory = (): HistoryItem[] => {
+    return messages
+      .filter(msg => msg.role !== "system") // Filter out system messages if any
+      .map(msg => ({
+        role: msg.role === "user" ? "user" : "model",
+        parts: [{ text: msg.content }]
+      }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() === "") return;
@@ -34,13 +57,19 @@ export default function ChatInterface() {
     setIsLoading(true);
 
     try {
+      // Convert messages to the format expected by the backend
+      const backendHistory = getBackendHistory();
+
       // Make the actual API call to our backend
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({
+          message: input,
+          history: backendHistory
+        }),
       });
 
       const data = await response.json();
@@ -53,9 +82,22 @@ export default function ChatInterface() {
           role: "assistant",
           content: `Sorry, I encountered an error: ${errorMessage}. Please check that your Google API key is correctly configured in Vercel.`
         }]);
-      } else {
-        // Handle successful response
+      } else if (data.type === 'processing') {
+        // Handle processing response (for function calls)
         setMessages((prev) => [...prev, { role: 'assistant', content: data.message }]);
+      } else {
+        // Handle regular text response
+        setMessages((prev) => [...prev, { role: 'assistant', content: data.message }]);
+
+        // If the response includes updated history, we could use it here
+        // This is optional as we're already updating the local state
+        // if (data.history) {
+        //   const newMessages = data.history.map(item => ({
+        //     role: item.role === 'user' ? 'user' : 'assistant',
+        //     content: item.parts[0].text
+        //   }));
+        //   setMessages(newMessages);
+        // }
       }
     } catch (error) {
       console.error('Error:', error);

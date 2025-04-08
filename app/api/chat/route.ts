@@ -1,76 +1,166 @@
-import { NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { NextResponse, NextRequest } from 'next/server';
 
-export async function POST(request: Request) {
+// --- Configuration & Setup ---
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+const MAKE_WEBHOOK_URL = process.env.MAKE_WEBHOOK_URL; // Optional for Make.com integration
+
+if (!GOOGLE_API_KEY) {
+    console.error("FATAL ERROR: GOOGLE_API_KEY environment variable is not set.");
+}
+if (!MAKE_WEBHOOK_URL) {
+    console.warn("WARNING: MAKE_WEBHOOK_URL environment variable is not set. Make.com integration will be disabled.");
+}
+
+// Optimized system prompt for ForgeAI
+const OPTIMIZED_SYSTEM_PROMPT = `You are ForgeAI, an AI assistant specialized in helping startups create and optimize their digital presence.
+You provide clear, concise, and helpful responses to questions about website development, marketing, and business strategy.
+When asked to generate a website or landing page, you'll collect the necessary information and help the user visualize what their site could look like.`;
+
+// Tool definition for site variable generation
+const generateSiteVariablesTool = {
+  functionDeclarations: [
+    {
+      name: "generate_site_variables",
+      description: "Generate variables for a new website or landing page based on user input",
+      parameters: {
+        type: "object",
+        properties: {
+          business_name: {
+            type: "string",
+            description: "The name of the business or startup"
+          },
+          business_description: {
+            type: "string",
+            description: "A brief description of what the business does"
+          },
+          primary_color: {
+            type: "string",
+            description: "Primary brand color in hex format (e.g., #FF5500)"
+          },
+          secondary_color: {
+            type: "string",
+            description: "Secondary brand color in hex format (e.g., #0055FF)"
+          },
+          headline: {
+            type: "string",
+            description: "Main headline for the landing page"
+          },
+          subheadline: {
+            type: "string",
+            description: "Supporting subheadline that explains the value proposition"
+          }
+        },
+        required: ["business_name", "business_description", "headline"]
+      }
+    }
+  ]
+};
+
+// Initialize Google AI client if API key is available
+let genAI: GoogleGenerativeAI | undefined;
+if (GOOGLE_API_KEY) {
+    genAI = new GoogleGenerativeAI(GOOGLE_API_KEY);
+}
+
+// --- API Route Handler (App Router Style) ---
+export async function POST(request: NextRequest) {
   try {
-    const { message } = await request.json();
-
-    // Debug: Log the API key (first few characters only for security)
-    const apiKey = process.env.GOOGLE_API_KEY || '';
-    console.log('API Key available:', apiKey ? `${apiKey.substring(0, 4)}...` : 'No API key found');
-
-    // If no API key is found, use a fallback response instead of throwing an error
-    if (!apiKey) {
-      console.warn('No Google API key found - using fallback response');
+    // Check if essential components are initialized
+    if (!genAI) {
+      console.error("API cannot function: Google AI Client not initialized (check API key).");
       return NextResponse.json({
         message: "I'm currently operating in fallback mode because the Google API key is not configured. Please add your Google API key to the Vercel environment variables.",
         fallback: true
       });
     }
 
-    // Call Google's Gemini API
-    const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
-    console.log('Calling Google API at:', apiUrl);
+    // Extract message and history from JSON request body
+    const body = await request.json();
+    const { message: userMessage, history = [] } = body;
 
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: message }
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1000,
-        }
-      })
+    if (!userMessage) {
+      return NextResponse.json({ message: 'User message is required' }, { status: 400 });
+    }
+
+    // --- Select Model and Configure ---
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash-latest",
+      systemInstruction: OPTIMIZED_SYSTEM_PROMPT,
+      tools: generateSiteVariablesTool,
     });
 
-    if (!response.ok) {
-      let errorMessage = `Google API error: ${response.status}`;
-      try {
-        const errorData = await response.json();
-        console.error('Google API error details:', JSON.stringify(errorData));
-        if (errorData.error) {
-          errorMessage += ` - ${errorData.error.message || errorData.error.status}`;
-        }
-      } catch (e) {
-        console.error('Could not parse error response:', e);
+    // --- Start Chat / Send Message ---
+    const chat = model.startChat({
+      history: history,
+      generationConfig: {
+        temperature: 0.3 // Apply optimized temperature
       }
-      throw new Error(errorMessage);
+    });
+
+    console.log(`Sending message to AI: "${userMessage}"`);
+    const result = await chat.sendMessage(userMessage);
+    const response = result.response;
+
+    // --- Process Response ---
+    let extractedArgs = null;
+    let aiTextMessage = null;
+    let updatedHistory = [...history]; // Start building updated history
+
+    updatedHistory.push({ role: "user", parts: [{ text: userMessage }] }); // Add user turn
+
+    const functionCalls = response.functionCalls();
+
+    if (functionCalls && functionCalls.length > 0 && functionCalls[0].name === 'generate_site_variables') {
+      // --- Handle Function Call ---
+      console.log("Function call requested by model:");
+      extractedArgs = functionCalls[0].args;
+      console.log("Arguments:", JSON.stringify(extractedArgs, null, 2));
+
+      // Trigger Make.com webhook if URL is configured
+      if (MAKE_WEBHOOK_URL) {
+        const payloadForMake = {
+          ...extractedArgs,
+          user_id: "app-router-user-mvp", // Example user ID
+        };
+
+        console.log("Sending payload to Make.com webhook...");
+        const makeResponse = await fetch(MAKE_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payloadForMake),
+        });
+
+        if (!makeResponse.ok) {
+          const errorBody = await makeResponse.text();
+          console.error(`Error triggering Make.com: ${makeResponse.status} ${makeResponse.statusText}`, errorBody);
+          return NextResponse.json({ message: 'ForgeAI started but failed to trigger the build process.' }, { status: 502 });
+        }
+        console.log("Make.com webhook triggered successfully.");
+      } else {
+        console.log("Make.com webhook URL not configured. Skipping webhook trigger.");
+      }
+
+      // Send processing confirmation - NO history update sent back on function call
+      return NextResponse.json({
+        message: "Okay, I have the details! ForgeAI is starting the build process now...",
+        type: 'processing' // Special type for frontend
+      }, { status: 200 });
+
+    } else {
+      // --- Handle Regular Text Response ---
+      aiTextMessage = response.text();
+      console.log("AI Text Response:", aiTextMessage);
+
+      updatedHistory.push({ role: "model", parts: [{ text: aiTextMessage }] }); // Add AI turn
+
+      // Send text response back WITH updated history
+      return NextResponse.json({
+        message: aiTextMessage,
+        history: updatedHistory,
+        type: 'text'
+      }, { status: 200 });
     }
-
-    const data = await response.json();
-
-    // Extract the response text from the Gemini API response
-    let aiResponse = "Sorry, I couldn't generate a response.";
-    if (data.candidates &&
-        data.candidates[0] &&
-        data.candidates[0].content &&
-        data.candidates[0].content.parts &&
-        data.candidates[0].content.parts[0]) {
-      aiResponse = data.candidates[0].content.parts[0].text;
-    }
-
-    return NextResponse.json({ message: aiResponse });
   } catch (error: unknown) {
     console.error('Error in chat API:', error);
 
