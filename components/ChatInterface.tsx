@@ -57,18 +57,14 @@ export default function ChatInterface() {
     setIsLoading(true);
 
     try {
-      // Convert messages to the format expected by the backend
-      const backendHistory = getBackendHistory();
-
-      // Make the actual API call to our backend
-      const response = await fetch('/api/chat', {
+      // Make the API call to our simplified backend
+      const response = await fetch('/api/chat-simple', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: input,
-          history: backendHistory
+          message: input
         }),
       });
 
