@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     // --- Process Response ---
     let extractedArgs = null;
     let aiTextMessage = null;
-    let updatedHistory = [...history]; // Start building updated history
+    const updatedHistory = [...history]; // Start building updated history
 
     updatedHistory.push({ role: "user", parts: [{ text: userMessage }] }); // Add user turn
 
