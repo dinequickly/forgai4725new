@@ -2,17 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 
-// Define types for messages and history
+// Define types for messages
 type MessageRole = "user" | "assistant" | "system";
 
 interface Message {
   role: MessageRole;
   content: string;
-}
-
-interface HistoryItem {
-  role: string; // "user" or "model"
-  parts: Array<{ text: string }>;
 }
 
 export default function ChatInterface() {
@@ -36,22 +31,15 @@ export default function ChatInterface() {
     flexDirection: "column" as const,
   };
 
-  // Convert messages to the format expected by the Google AI API
-  const getBackendHistory = (): HistoryItem[] => {
-    return messages
-      .filter(msg => msg.role !== "system") // Filter out system messages if any
-      .map(msg => ({
-        role: msg.role === "user" ? "user" : "model",
-        parts: [{ text: msg.content }]
-      }));
-  };
+  // This function is no longer used since we're using the simplified API
+  // Keeping the type definition for future reference
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() === "") return;
 
     // Add user message to chat
-    const userMessage = { role: "user", content: input };
+    const userMessage: Message = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
@@ -75,7 +63,7 @@ export default function ChatInterface() {
         const errorMessage = data.details || data.error || 'Network response was not ok';
         console.error('API Error:', errorMessage);
         setMessages((prev) => [...prev, {
-          role: "assistant",
+          role: "assistant" as MessageRole,
           content: `Sorry, I encountered an error: ${errorMessage}. Please check that your Google API key is correctly configured in Vercel.`
         }]);
       } else if (data.fallback) {
@@ -94,13 +82,13 @@ export default function ChatInterface() {
           content += `- Environment variables: ${data.debug.envVars}\n`;
         }
 
-        setMessages((prev) => [...prev, { role: 'assistant', content }]);
+        setMessages((prev) => [...prev, { role: 'assistant' as MessageRole, content }]);
       } else if (data.type === 'processing') {
         // Handle processing response (for function calls)
-        setMessages((prev) => [...prev, { role: 'assistant', content: data.message }]);
+        setMessages((prev) => [...prev, { role: 'assistant' as MessageRole, content: data.message }]);
       } else {
         // Handle regular text response
-        setMessages((prev) => [...prev, { role: 'assistant', content: data.message }]);
+        setMessages((prev) => [...prev, { role: 'assistant' as MessageRole, content: data.message }]);
 
         // If the response includes updated history, we could use it here
         // This is optional as we're already updating the local state
@@ -115,7 +103,7 @@ export default function ChatInterface() {
     } catch (error) {
       console.error('Error:', error);
       setMessages((prev) => [...prev, {
-        role: "assistant",
+        role: "assistant" as MessageRole,
         content: "Sorry, I encountered an error processing your request. Please try again later."
       }]);
     } finally {
