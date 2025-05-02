@@ -54,6 +54,9 @@ export function Navbar() {
           <Link href="/demo" className="text-foreground/80 hover:text-foreground transition-colors">
             Demo
           </Link>
+          <Link href="/submit" className="text-foreground/80 hover:text-foreground transition-colors">
+            Submit Idea
+          </Link>
           <Link href="/features" className="text-foreground/80 hover:text-foreground transition-colors">
             Features
           </Link>
@@ -100,6 +103,13 @@ export function Navbar() {
               onClick={() => setIsMenuOpen(false)}
             >
               Demo
+            </Link>
+            <Link 
+              href="/submit" 
+              className="py-2 px-4 hover:bg-secondary rounded-md"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Submit Idea
             </Link>
             <Link 
               href="/features" 
