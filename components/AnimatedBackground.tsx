@@ -33,8 +33,8 @@ const AnimatedBackground: React.FC = () => {
       alpha: number;
       
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        this.x = Math.random() * (canvas?.width || window.innerWidth);
+        this.y = Math.random() * (canvas?.height || window.innerHeight);
         this.size = Math.random() * 5 + 1;
         this.speedX = Math.random() * 1 - 0.5;
         this.speedY = Math.random() * 1 - 0.5;
@@ -55,11 +55,11 @@ const AnimatedBackground: React.FC = () => {
         this.y += this.speedY;
         
         // Bounce off edges
-        if (this.x > canvas.width || this.x < 0) {
+        if (this.x > (canvas?.width || window.innerWidth) || this.x < 0) {
           this.speedX = -this.speedX;
         }
         
-        if (this.y > canvas.height || this.y < 0) {
+        if (this.y > (canvas?.height || window.innerHeight) || this.y < 0) {
           this.speedY = -this.speedY;
         }
       }
@@ -75,7 +75,9 @@ const AnimatedBackground: React.FC = () => {
     
     // Create particles
     const particlesArray: Particle[] = [];
-    const numberOfParticles = Math.min(100, Math.floor((canvas.width * canvas.height) / 15000));
+    const canvasWidth = canvas?.width || window.innerWidth;
+    const canvasHeight = canvas?.height || window.innerHeight;
+    const numberOfParticles = Math.min(100, Math.floor((canvasWidth * canvasHeight) / 15000));
     
     for (let i = 0; i < numberOfParticles; i++) {
       particlesArray.push(new Particle());
@@ -106,7 +108,8 @@ const AnimatedBackground: React.FC = () => {
     
     // Animation loop
     function animate() {
-      ctx!.clearRect(0, 0, canvas.width, canvas.height);
+      if (!ctx || !canvas) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       // Update and draw particles
       for (let i = 0; i < particlesArray.length; i++) {
