@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 
 // Webhook URL for idea submissions
-const WEBHOOK_URL = 'https://spanishclass.app.n8n.cloud/webhook/d2050970-c77a-4dad-8292-282de4e55cfa';
+const WEBHOOK_URL = 'https://spanishclass.app.n8n.cloud/webhook/forgeai';
 
 export async function POST(request: NextRequest) {
   try {
